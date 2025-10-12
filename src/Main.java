@@ -8,7 +8,7 @@ public class Main {
             JFrame frame = new JFrame("Arkanoid");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
-            frame.add(new GamePanel());
+            frame.add(new GamePanel());//chưa hoàn chỉnh
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);

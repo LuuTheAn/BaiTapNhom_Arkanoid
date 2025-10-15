@@ -23,11 +23,47 @@ public class Ball extends MovableObject {
     }
     public boolean bounceOff(Brick brick) {
         if (!brick.isDestroyed() && getBounds().intersects(brick.getBounds())) {
-            dy = -dy;
+            Rectangle ballRect = getBounds();
+            Rectangle brickRect = brick.getBounds();
+
+            // Tính độ giao nhau theo 4 hướng
+            int overlapLeft   = ballRect.x + ballRect.width - brickRect.x;
+            int overlapRight  = brickRect.x + brickRect.width - ballRect.x;
+            int overlapTop    = ballRect.y + ballRect.height - brickRect.y;
+            int overlapBottom = brickRect.y + brickRect.height - ballRect.y;
+
+            // Lấy độ chồng nhỏ nhất để xác định mặt va chạm
+            int minOverlapX = Math.min(overlapLeft, overlapRight);
+            int minOverlapY = Math.min(overlapTop, overlapBottom);
+
+            // Va chạm ngang
+            if (minOverlapX < minOverlapY) {
+                if (overlapLeft < overlapRight) {
+                    // Đẩy bóng ra bên trái viên gạch
+                    x -= overlapLeft;
+                } else {
+                    // Đẩy bóng ra bên phải viên gạch
+                    x += overlapRight;
+                }
+                dx = -dx; // Đảo hướng X
+            }
+            // Va chạm dọc
+            else {
+                if (overlapTop < overlapBottom) {
+                    // Đẩy bóng ra phía trên viên gạch
+                    y -= overlapTop;
+                } else {
+                    // Đẩy bóng ra phía dưới viên gạch
+                    y += overlapBottom;
+                }
+                dy = -dy; // Đảo hướng Y
+            }
+
             return true;
         }
         return false;
     }
+
     public void reset(int x, int y, int dx, int dy) {
         this.x = x; this.y = y; this.dx = dx; this.dy = dy;
     }

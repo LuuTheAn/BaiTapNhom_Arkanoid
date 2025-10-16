@@ -114,9 +114,10 @@ public class GameManager {
             g.setFont(new Font("Arial", Font.PLAIN, 18));
             g.setColor(Color.WHITE);
             g.drawString("Press R to Restart", width / 2 - 80, height / 2 + 40);
+            g.drawString("Press M for Menu", width / 2 - 80, height / 2 + 65);
         }
 
-        // ✅ Thắng Game
+// Thắng Game
         if (gameWin) {
             g.setFont(new Font("Arial", Font.BOLD, 36));
             g.setColor(Color.GREEN);
@@ -124,7 +125,9 @@ public class GameManager {
             g.setFont(new Font("Arial", Font.PLAIN, 18));
             g.setColor(Color.WHITE);
             g.drawString("Press R to Play Again", width / 2 - 90, height / 2 + 40);
+            g.drawString("Press M for Menu", width / 2 - 90, height / 2 + 65);
         }
+
     }
 
     public void onKeyPressed(int key) {
@@ -136,5 +139,13 @@ public class GameManager {
     public void onKeyReleased(int key) {
         if (key == KeyEvent.VK_LEFT) leftPressed = false;
         if (key == KeyEvent.VK_RIGHT) rightPressed = false;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public boolean isGameWin() {
+        return gameWin;
     }
 }

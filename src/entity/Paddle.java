@@ -21,4 +21,12 @@ public class Paddle extends MovableObject {
         g.setColor(Color.GREEN);
         g.fillRect(x, y, width, height);
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
 }

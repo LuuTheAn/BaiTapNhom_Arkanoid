@@ -72,4 +72,13 @@ public class Ball extends MovableObject {
         g.setColor(Color.WHITE);
         g.fillOval(x, y, width, height);
     }
+    public int getDx() { return dx; }
+    public int getDy() { return dy; }
+    public void setDx(int dx) { this.dx = dx; }
+    public void setDy(int dy) { this.dy = dy; }
+    public void setSpeed(double newDx, double newDy) {
+        this.dx = (int) newDx;
+        this.dy = (int) newDy;
+    }
+
 }

@@ -34,8 +34,8 @@ public class GameManager {
         bricks = new ArrayList<>();
         powerUps.clear();
 
-        for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < 7; row++) {
+            for (int col = 0; col < 16; col++) {
                 int x = 20 + col * 45;
                 int y = 50 + row * 25;
 

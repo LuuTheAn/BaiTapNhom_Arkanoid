@@ -5,7 +5,7 @@ import java.awt.*;
 public class UnbreakableBrick extends Brick {
 
     public UnbreakableBrick(int x, int y, int width, int height) {
-        // HitPoints đặt cao nhất vì gạch không bao giờ bị phá
+        // HitPoints đặt cao nhất vì gạch không bao giờ bị phá.
         super(x, y, width, height, Integer.MAX_VALUE);
     }
 

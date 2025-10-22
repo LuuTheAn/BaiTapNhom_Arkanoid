@@ -10,7 +10,7 @@ public class ExplosiveBrick extends Brick {
 
     @Override
     public void render(Graphics2D g) {
-        // Màu đỏ nổi bật cho gạch nổ.
+        // Màu đỏ nổi bật cho gạch nổ
         g.setColor(Color.RED);
         g.fillRect(x, y, width, height);
         g.setColor(Color.BLACK);

@@ -6,7 +6,7 @@ public class Paddle extends MovableObject {
     private int speed;
     public Paddle(int x, int y, int width, int height, int speed) {
         super(x, y, width, height, 0, 0);
-        this.speed = speed;
+        this.speed = speed*2;
     }
     public void moveLeft() {
         x -= speed;
@@ -21,4 +21,12 @@ public class Paddle extends MovableObject {
         g.setColor(Color.GREEN);
         g.fillRect(x, y, width, height);
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
 }

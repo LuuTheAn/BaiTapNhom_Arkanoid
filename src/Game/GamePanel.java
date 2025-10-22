@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class GamePanel extends JPanel implements ActionListener, KeyListener {
-    public static final int WIDTH = 400, HEIGHT = 600;
+    public static final int WIDTH = 800, HEIGHT = 600;
     private GameManager gameManager;
     private Timer timer;
     private JPanel container; // 🔹 tham chiếu về container chính (CardLayout)

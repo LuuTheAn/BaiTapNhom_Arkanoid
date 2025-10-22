@@ -8,7 +8,7 @@ public class StrongBrick extends Brick {
     }
     @Override
     public void render(Graphics2D g) {
-        g.setColor(hitPoints == 2 ? Color.RED : Color.PINK);
+        g.setColor(hitPoints == 2 ? Color.green : Color.yellow);
         g.fillRect(x, y, width, height);
         g.setColor(Color.BLACK);
         g.drawRect(x, y, width, height);

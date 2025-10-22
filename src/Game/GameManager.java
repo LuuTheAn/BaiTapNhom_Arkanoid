@@ -33,10 +33,10 @@ public class GameManager {
                 int y = 50 + row * 25;
 
                 if (row == 0) {
-                    // Hàng trên cùng: gạch không thể phá
+                    // Hàng trên cùng: gạch không thể phá.
                     bricks.add(new UnbreakableBrick(x, y, 40, 20));
                 } else if (row == 1) {
-                    // Hàng thứ 2: gạch mạnh
+                    // Hàng thứ 2: gạch mạnh.
                     bricks.add(new StrongBrick(x, y, 40, 20));
                 } else if (row == 4) {
                     // 💣 Hàng thứ 5 : gạch nổ

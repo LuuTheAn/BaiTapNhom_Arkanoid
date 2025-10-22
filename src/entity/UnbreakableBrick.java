@@ -12,7 +12,7 @@ public class UnbreakableBrick extends Brick {
     @Override
     public void takeHit() {
         // Gạch cứng không giảm hitPoints
-        // Có thể thêm hiệu ứng khi bóng chạm
+        // Có thể thêm hiệu ứng khi bóng chạm'
         System.out.println("Unbreakable brick hit! No damage taken.");
     }
 
@@ -24,7 +24,7 @@ public class UnbreakableBrick extends Brick {
 
     @Override
     public void render(Graphics2D g) {
-        // Vẽ gạch cứng màu xám đậm để phân biệt
+        // Vẽ gạch cứng màu xám đậm để phân biệt.
         g.setColor(Color.DARK_GRAY);
         g.fillRect(x, y, width, height);
         g.setColor(Color.BLACK); // viền

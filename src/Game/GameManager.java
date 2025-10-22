@@ -31,13 +31,23 @@ public class GameManager {
             for (int col = 0; col < 8; col++) {
                 int x = 20 + col * 45;
                 int y = 50 + row * 25;
+
                 if (row == 0) {
+                    // Hàng trên cùng: gạch không thể phá
+                    bricks.add(new UnbreakableBrick(x, y, 40, 20));
+                } else if (row == 1) {
+                    // Hàng thứ 2: gạch mạnh
                     bricks.add(new StrongBrick(x, y, 40, 20));
+                } else if (row == 4) {
+                    // 💣 Hàng thứ 5 : gạch nổ
+                    bricks.add(new ExplosiveBrick(x, y, 40, 20));
                 } else {
+                    // Các hàng còn lại: gạch thường
                     bricks.add(new NormalBrick(x, y, 40, 20));
                 }
             }
         }
+
 
         score = 0;
         lives = 3;
@@ -60,22 +70,45 @@ public class GameManager {
         }
 
         // Va chạm với gạch
+        Brick hitBrick = null;
+
         for (Brick brick : bricks) {
             if (!brick.isDestroyed() && ball.bounceOff(brick)) {
+                hitBrick = brick;
                 brick.takeHit();
-                score += 10;
+
+                if (!(brick instanceof UnbreakableBrick)) {
+                    score += 10;
+                }
+
                 break;
             }
         }
+
+// ✅ Nếu chạm phải ExplosiveBrick → nổ
+        if (hitBrick instanceof ExplosiveBrick) {
+            explodeBrick((ExplosiveBrick) hitBrick);
+        }
+
+
 
         // Xóa gạch đã bị phá
         bricks.removeIf(Brick::isDestroyed);
 
         // ✅ Kiểm tra thắng (hết gạch)
-        if (bricks.isEmpty()) {
+        boolean allUnbreakable = true;
+        for (Brick brick : bricks) {
+            if (!(brick instanceof UnbreakableBrick)) {
+                allUnbreakable = false;
+                break;
+            }
+        }
+
+        if (allUnbreakable) {
             gameWin = true;
             System.out.println("You Win!");
         }
+
 
         // Kiểm tra bóng rơi khỏi màn hình
         if (ball.y > height) {
@@ -140,6 +173,45 @@ public class GameManager {
         if (key == KeyEvent.VK_LEFT) leftPressed = false;
         if (key == KeyEvent.VK_RIGHT) rightPressed = false;
     }
+    // 💥 Xử lý gạch nổ
+    private void explodeBrick(ExplosiveBrick center) {
+        int explosionRange = 1; // phạm vi nổ 1 ô
+        int bw = center.width;
+        int bh = center.height;
+
+        List<Brick> toDestroy = new ArrayList<>();
+
+        for (Brick b : bricks) {
+            if (b.isDestroyed() || b instanceof UnbreakableBrick) continue;
+
+            // Tính khoảng cách theo lưới (mỗi viên gạch cách nhau theo width/height)
+            int dx = Math.abs(b.x - center.x) / bw;
+            int dy = Math.abs(b.y - center.y) / bh;
+
+            if (dx <= explosionRange && dy <= explosionRange) {
+                toDestroy.add(b);
+            }
+        }
+
+        // Phá hủy các gạch trong vùng nổ
+        for (Brick b : toDestroy) {
+            b.takeHit();
+
+            // Nếu là gạch nổ khác → nổ dây chuyền
+            if (b instanceof ExplosiveBrick && b != center) {
+                explodeBrick((ExplosiveBrick) b);
+            }
+
+            if (b.isDestroyed() && !(b instanceof UnbreakableBrick)) {
+                score += 10;
+            }
+        }
+
+        // Xóa gạch đã bị phá
+        bricks.removeIf(Brick::isDestroyed);
+
+        System.out.println("💥 Explosion destroyed " + toDestroy.size() + " bricks!");
+    }
 
     public boolean isGameOver() {
         return gameOver;
@@ -149,3 +221,4 @@ public class GameManager {
         return gameWin;
     }
 }
+

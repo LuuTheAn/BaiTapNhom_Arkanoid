@@ -1,0 +1,14 @@
+[33mc163dad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-gach-no[m[33m)[m HEAD@{0}: checkout: moving from c163dad6207b6bb3bc0a3fb48786616a8d20ffc4 to feature-gach-no
+[33mc163dad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-gach-no[m[33m)[m HEAD@{1}: reset: moving to c163dad
+[33m6b90be2[m HEAD@{2}: commit: Khôi phục lại phần menu từ commit c163dad
+[33mba2c90c[m HEAD@{3}: commit: Hoàn tất merge và fix conflict
+[33mc163dad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-gach-no[m[33m)[m HEAD@{4}: pull origin main --rebase (start): checkout c163dad6207b6bb3bc0a3fb48786616a8d20ffc4
+[33mfb0c2d5[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{5}: rebase (abort): returning to refs/heads/main
+[33m9502f22[m HEAD@{6}: commit: Fix merge conflict GameManager, add explosive & unbreakable bricks
+[33mc163dad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-gach-no[m[33m)[m HEAD@{7}: pull origin main --rebase (start): checkout c163dad6207b6bb3bc0a3fb48786616a8d20ffc4
+[33mfb0c2d5[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{8}: commit: Added files
+[33m61a88a2[m HEAD@{9}: commit: Add ExplosiveBrick and UnbreakableBrick
+[33mf357b43[m HEAD@{10}: commit: bổ sung thêm gạch nổ và gạch bất tử,đồng thời sửa lại manager sao cho phù hợp vs 2 tính năng trên
+[33mbab6061[m HEAD@{11}: commit: bổ sung thêm gạch nổ và gạch bất tử,đồng thời sửa lại manager sao cho phù hợp vs 2 tính năng trên
+[33m76bc587[m HEAD@{12}: commit: bổ sung thêm gạch nổ và gạch bất tử,đồng thời sửa lại manager sao cho phù hợp vs 2 tính năng trên
+[33m4c0c035[m HEAD@{13}: commit (initial): bổ sung thêm gạch nổ và gạch bất tử,đồng thời sửa lại manager sao cho phù hợp vs 2 tính năng trên

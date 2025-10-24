@@ -1,3 +1,4 @@
+
 package entity;
 
 import java.awt.*;
@@ -18,7 +19,7 @@ public class Paddle extends MovableObject {
     }
     @Override
     public void render(Graphics2D g) {
-        g.setColor(Color.GREEN);
+        g.setColor(Color.ORANGE);
         g.fillRect(x, y, width, height);
     }
     public int getWidth() {
@@ -27,6 +28,16 @@ public class Paddle extends MovableObject {
 
     public void setWidth(int width) {
         this.width = width;
+    }
+    private boolean expanded = false;
+
+    // Getter/Setter
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
     }
 
 }

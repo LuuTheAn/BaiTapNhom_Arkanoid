@@ -1,3 +1,4 @@
+
 package entity;
 
 import java.awt.*;
@@ -31,4 +32,3 @@ public class UnbreakableBrick extends Brick {
         g.drawRect(x, y, width, height);
     }
 }
-

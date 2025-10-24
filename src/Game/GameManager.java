@@ -1,10 +1,9 @@
 package Game;
 
 import entity.*;
-import Powerup.*; // ✅ import tất cả power-up
+import Powerup.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
@@ -12,15 +11,12 @@ public class GameManager {
     private Paddle paddle;
     private Ball ball;
     private List<Brick> bricks;
-    private List<PowerUp> powerUps = new ArrayList<>(); // ✅ Danh sách Power-Up
+    private PowerUpManager powerUpManager; // ✅ Tách phần quản lý PowerUp riêng
+
     private int score = 0, lives = 3;
     private boolean leftPressed = false, rightPressed = false;
     private boolean gameOver = false;
     private boolean gameWin = false;
-
-    // ⏱ Thời điểm kết thúc hiệu ứng
-    private long expandEndTime = 0;
-    private long fastBallEndTime = 0;
 
     public GameManager(int width, int height) {
         this.width = width;
@@ -31,141 +27,64 @@ public class GameManager {
     public void reset() {
         paddle = new Paddle(width / 2 - 40, height - 40, 80, 15, 6);
         ball = new Ball(width / 2, height / 2, 12, 12, 4, -4);
-        bricks = new ArrayList<>();
-        powerUps.clear();
-
-        for (int row = 0; row < 7; row++) {
-            for (int col = 0; col < 16; col++) {
-                int x = 20 + col * 45;
-                int y = 50 + row * 25;
-
-                if (row == 0) {
-                    bricks.add(new UnbreakableBrick(x, y, 40, 20));
-                } else if (row == 1) {
-                    bricks.add(new StrongBrick(x, y, 40, 20));
-                } else if (row == 3) {
-                    bricks.add(new ExplosiveBrick(x, y, 40, 20));
-                } else {
-                    bricks.add(new NormalBrick(x, y, 40, 20));
-                }
-            }
-        }
+        bricks = BrickFactory.createDefaultBricks();
+        powerUpManager = new PowerUpManager(); // ✅ khởi tạo bộ quản lý PowerUp
 
         score = 0;
         lives = 3;
         gameOver = false;
         gameWin = false;
-        expandEndTime = 0;
-        fastBallEndTime = 0;
     }
 
     public void update() {
         if (gameOver || gameWin) return;
 
+        // 🕹 Điều khiển paddle
         if (leftPressed) paddle.moveLeft();
         if (rightPressed) paddle.moveRight(width);
 
-        ball.move();
+        // 🔴 Cập nhật bóng
+        ball.update(1.0 / 60); // cập nhật bóng với thời gian 1/60 giây mỗi frame
         ball.bounceOffWalls(width, height);
         ball.bounceOff(paddle);
 
-        // Va chạm gạch
+        // 🧱 Kiểm tra va chạm gạch
         Brick hitBrick = null;
         for (Brick brick : bricks) {
             if (!brick.isDestroyed() && ball.bounceOff(brick)) {
                 hitBrick = brick;
                 brick.takeHit();
 
-                // ✅ Chỉ khi gạch vỡ thì mới cộng điểm và tạo PowerUp
+                // ✅ Chỉ cộng điểm khi gạch thực sự bị phá
                 if (brick.isDestroyed() && !(brick instanceof UnbreakableBrick)) {
                     score += 10;
-
-                    // 🔹 Ngẫu nhiên tạo Power-Up (20%)
-                    if (Math.random() < 0.2) {
-                        double r = Math.random();
-                        PowerUp newPowerUp;
-
-                        if (r < 0.5) {
-                            newPowerUp = new ExpandPaddlePowerUp(
-                                    brick.x + brick.width / 2,
-                                    brick.y + brick.height / 2
-                            );
-                        } else {
-                            newPowerUp = new FastBallPowerUp(
-                                    brick.x + brick.width / 2,
-                                    brick.y + brick.height / 2
-                            );
-                        }
-
-                        powerUps.add(newPowerUp);
-                    }
+                    powerUpManager.spawnPowerUp(brick);
                 }
+
                 break;
             }
 
         }
 
-        // 💥 Gạch nổ
-        if (hitBrick instanceof ExplosiveBrick) {
+        // 💥 Nếu là gạch nổ
+        if (hitBrick instanceof ExplosiveBrick)
             explodeBrick((ExplosiveBrick) hitBrick);
-        }
 
-        // ✅ Cập nhật power-ups
-        List<PowerUp> collected = new ArrayList<>();
-        for (PowerUp p : powerUps) {
-            p.update();
-            if (p.getBounds().intersects(paddle.getBounds())) {
-                p.applyEffect(paddle);
+        // ⚡ Cập nhật power-ups
+        powerUpManager.update(ball, paddle, height);
 
-                // ⏱ Lưu thời gian hiệu ứng theo loại
-                if (p instanceof ExpandPaddlePowerUp) {
-                    expandEndTime = System.currentTimeMillis() + 5000;
-                } else if (p instanceof FastBallPowerUp) {
-                    fastBallEndTime = System.currentTimeMillis() + 5000;
-                    // tăng tốc bóng ngay lập tức
-                    ball.setSpeed(ball.getDx() * 1.5, ball.getDy() * 1.5);
-                }
-
-                collected.add(p);
-            }
-        }
-
-        // Xóa power-up đã ăn hoặc rơi khỏi màn
-        powerUps.removeAll(collected);
-        powerUps.removeIf(p -> p.getY() > height);
-
-        // ⏳ Hết hiệu ứng thì reset về bình thường
-        if (expandEndTime > 0 && System.currentTimeMillis() > expandEndTime) {
-            paddle.setWidth(80);
-            expandEndTime = 0;
-        }
-
-        if (fastBallEndTime > 0 && System.currentTimeMillis() > fastBallEndTime) {
-            // giảm tốc về ban đầu
-            double currentSpeedX = ball.getDx();
-            double currentSpeedY = ball.getDy();
-            ball.setSpeed(currentSpeedX / 1.5, currentSpeedY / 1.5);
-            fastBallEndTime = 0;
-        }
-
-        // Xóa gạch đã bị phá
+        // 🧱 Xóa gạch đã phá
         bricks.removeIf(Brick::isDestroyed);
 
-        // Kiểm tra thắng
-        boolean allUnbreakable = true;
-        for (Brick brick : bricks) {
-            if (!(brick instanceof UnbreakableBrick)) {
-                allUnbreakable = false;
-                break;
-            }
-        }
+        // 🏆 Kiểm tra thắng
+        boolean allUnbreakable = bricks.stream().allMatch(b -> b instanceof UnbreakableBrick);
         if (allUnbreakable) {
             gameWin = true;
             System.out.println("You Win!");
         }
 
-        // Mất bóng
-        if (ball.y > height) {
+        // 💔 Mất bóng
+        if (ball.getY() > height) {
             lives--;
             if (lives <= 0) {
                 gameOver = true;
@@ -181,8 +100,8 @@ public class GameManager {
 
         paddle.render(g);
         ball.render(g);
-        for (Brick brick : bricks) brick.render(g);
-        for (PowerUp p : powerUps) p.render(g);
+        bricks.forEach(b -> b.render(g));
+        powerUpManager.render(g); // ✅ vẽ toàn bộ powerup
 
         g.setColor(Color.WHITE);
         g.drawString("Score: " + score, 10, 20);
@@ -213,12 +132,17 @@ public class GameManager {
         if (key == KeyEvent.VK_R && (gameOver || gameWin)) reset();
     }
 
-    public boolean isGameOver() { return gameOver; }
-    public boolean isGameWin() { return gameWin; }
-
     public void onKeyReleased(int key) {
         if (key == KeyEvent.VK_LEFT) leftPressed = false;
         if (key == KeyEvent.VK_RIGHT) rightPressed = false;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public boolean isGameWin() {
+        return gameWin;
     }
 
     // 💥 Xử lý gạch nổ
@@ -227,41 +151,26 @@ public class GameManager {
         int bw = center.width;
         int bh = center.height;
 
-        List<Brick> toDestroy = new ArrayList<>();
-
+        var toDestroy = new java.util.ArrayList<Brick>();
         for (Brick b : bricks) {
             if (b.isDestroyed() || b instanceof UnbreakableBrick) continue;
-
             int dx = Math.abs(b.x - center.x) / bw;
             int dy = Math.abs(b.y - center.y) / bh;
-
-            if (dx <= explosionRange && dy <= explosionRange) {
+            if (dx <= explosionRange && dy <= explosionRange)
                 toDestroy.add(b);
-            }
         }
 
         for (Brick b : toDestroy) {
             b.takeHit();
-
-            if (b instanceof ExplosiveBrick && b != center) {
+            if (b instanceof ExplosiveBrick && b != center)
                 explodeBrick((ExplosiveBrick) b);
-            }
 
             if (b.isDestroyed() && !(b instanceof UnbreakableBrick)) {
                 score += 10;
-
-                // 🔹 Khi nổ có thể rơi power-up
-                if (Math.random() < 0.1) {
-                    double r = Math.random();
-                    PowerUp newPowerUp = (r < 0.5)
-                            ? new ExpandPaddlePowerUp(b.x + b.width / 2, b.y + b.height / 2)
-                            : new FastBallPowerUp(b.x + b.width / 2, b.y + b.height / 2);
-                    powerUps.add(newPowerUp);
-                }
+                powerUpManager.spawnPowerUp(b);
             }
         }
 
         bricks.removeIf(Brick::isDestroyed);
-        System.out.println("💥 Explosion destroyed " + toDestroy.size() + " bricks!");
     }
 }

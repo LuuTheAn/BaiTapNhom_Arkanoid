@@ -10,4 +10,5 @@ public abstract class Brick extends GameObject {
     }
     public void takeHit() { hitPoints--; }
     public boolean isDestroyed() { return hitPoints <= 0; }
+    public abstract void render(Graphics2D g);
 }

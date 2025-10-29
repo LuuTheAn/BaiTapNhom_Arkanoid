@@ -12,8 +12,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     public static final int WIDTH = 800, HEIGHT = 600;
     private GameManager gameManager;
     private Timer timer;
-    private JPanel container; // 🔹 tham chiếu về container chính (CardLayout)
+    private JPanel container; // 🔹 tham chiếu container chính (CardLayout)
     private Image backgroundImage;
+    private int currentLevel = 1; // 🔹 lưu level hiện tại
 
     public GamePanel(JPanel container) {
         this.container = container;
@@ -24,11 +25,32 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         gameManager = new GameManager(WIDTH, HEIGHT);
         timer = new Timer(1000 / 60, this);
 
+        // ✅ GÁN CALLBACK CHO GAME MANAGER
+        gameManager.setOnReturnToMenu(() -> {
+            SwingUtilities.invokeLater(() -> {
+                if (container != null) {
+                    CardLayout cl = (CardLayout) container.getLayout();
+                    cl.show(container, "MENU");
+                    timer.stop();
+
+                    // ✅ Gọi phát lại nhạc nền menu
+                    for (Component comp : container.getComponents()) {
+                        if (comp instanceof MenuPanel menuPanel) {
+                            menuPanel.resumeBackgroundMusic();
+                            break;
+                        }
+                    }
+                    System.out.println("↩ Quay về MENU thành công (callback).");
+                } else {
+                    System.out.println("⚠ container null, không quay lại menu được!");
+                }
+            });
+        });
+
         try {
             var url = getClass().getResource("/img/game_bg.jpg");
             backgroundImage = ImageIO.read(url);
         } catch (Exception e) {
-            e.printStackTrace();
             System.out.println("Không tìm thấy ảnh nền, dùng nền đen mặc định");
             backgroundImage = null;
         }
@@ -38,20 +60,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         this.container = container;
     }
 
-    public void startGame() {
-        gameManager.reset();
+    // 🔹 Gọi khi bắt đầu chơi level
+    public void startGame(int level) {
+        this.currentLevel = level;
+        gameManager.loadLevel(level); // 👉 gọi hàm mới trong GameManager
         timer.start();
-        requestFocusInWindow(); // 🔹 tự động focus khi bắt đầu game
+
+        // đảm bảo focus nhận phím
+        requestFocusInWindow();
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
+    }
+
+    // 🔹 Giữ lại cho trường hợp reset từ trong game
+    public void startGame() {
+        startGame(currentLevel);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
-
         gameManager.render((Graphics2D) g);
     }
 
@@ -70,16 +100,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             if (container != null) {
                 CardLayout cl = (CardLayout) container.getLayout();
                 cl.show(container, "MENU");
-                timer.stop(); // 🛑 Dừng game loop khi quay về menu
+                timer.stop();
 
                 // ✅ Gọi phát lại nhạc nền menu
-                Component[] comps = container.getComponents();
-                for (Component comp : comps) {
+                for (Component comp : container.getComponents()) {
                     if (comp instanceof MenuPanel menuPanel) {
                         menuPanel.resumeBackgroundMusic();
                         break;
                     }
                 }
+                System.out.println("↩ Quay về MENU bằng phím M.");
             }
         }
 
@@ -97,6 +127,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     @Override
     public void addNotify() {
         super.addNotify();
-        requestFocusInWindow(); // 🔹 tự động focus khi hiển thị
+        requestFocusInWindow();
     }
 }

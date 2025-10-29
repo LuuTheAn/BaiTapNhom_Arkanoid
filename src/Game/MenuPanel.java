@@ -12,7 +12,7 @@ public class MenuPanel extends JPanel {
     private JButton quitButton;
     private JPanel container;
     private Image backgroundImage;
-    private Sound sound; // ✅ Dùng lại đối tượng Sound để quản lý âm thanh
+    private Sound sound;
 
     public MenuPanel(JPanel container) {
         this.container = container;
@@ -27,12 +27,8 @@ public class MenuPanel extends JPanel {
 
         // 🔹 Khởi tạo âm thanh
         sound = new Sound();
-
-        // 🔹 Load nhạc nền và hiệu ứng
         sound.setVolume(0, 0.3f);
-
-        // 🔁 Phát nhạc nền lặp vô hạn
-        sound.loop(0);
+        sound.loop(0); // 🔁 Nhạc nền menu
 
         // 🔹 Setup layout
         GridBagConstraints gbc = new GridBagConstraints();
@@ -61,21 +57,19 @@ public class MenuPanel extends JPanel {
 
         // 🔹 Sự kiện PLAY
         playButton.addActionListener(e -> {
-            playSE(1);         // âm thanh click
-            sound.stop(0);     // 🛑 dừng nhạc nền khi vào game
+            playSE(1);
 
+
+            // 👉 Chuyển sang màn Level Select
             CardLayout cl = (CardLayout) container.getLayout();
-            cl.show(container, "GAME");
+            cl.show(container, "LEVEL");
 
-            GamePanel gamePanel = (GamePanel) container.getComponent(1);
-            gamePanel.startGame();
-
-            SwingUtilities.invokeLater(() -> gamePanel.requestFocusInWindow());
+            // ⚠️ Không gọi GamePanel ở đây — việc startGame sẽ được gọi trong LevelSelectPanel khi chọn level
         });
 
         // 🔹 Sự kiện QUIT
         quitButton.addActionListener(e -> {
-            playSE(1); // âm thanh click
+            playSE(1);
             int confirm = JOptionPane.showConfirmDialog(
                     this,
                     "Bạn có chắc chắn muốn thoát game không?",
@@ -85,7 +79,7 @@ public class MenuPanel extends JPanel {
 
             playSE(1);
             if (confirm == JOptionPane.YES_OPTION) {
-                sound.stop(0); // 🛑 dừng nhạc nền
+                sound.stop(0);
                 playSE(1);
                 System.exit(0);
             }
@@ -94,10 +88,15 @@ public class MenuPanel extends JPanel {
 
     // 🔹 Hàm gọi lại khi quay về menu
     public void resumeBackgroundMusic() {
-        sound.stop(0);       // Dừng nếu đang phát nhạc cũ
+        sound.stop(0);
         sound.setVolume(0, 0.3f);
-        sound.loop(0);       // 🔁 Phát lại nhạc nền menu
+        sound.loop(0);
     }
+    // 🔹 Hàm gọi lại khi rời khỏi menu
+    public void stopBackgroundMusic() {
+        sound.stop(0);
+    }
+
 
     // 🔹 Tạo style cho nút
     private void styleButton(JButton button) {

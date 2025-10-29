@@ -23,6 +23,7 @@ public class GameManager {
     private boolean leftPressed = false, rightPressed = false;
     private boolean gameOver = false;
     private boolean gameWin = false;
+    private boolean paused = false; // ⏸️ trạng thái tạm dừng
 
     private BufferedImage backgroundImage;
     private Sound sound;
@@ -30,7 +31,7 @@ public class GameManager {
     private int currentLevel = 1;
     private static final int MAX_LEVEL = 5;
 
-    // ⚡ Thêm trạng thái chuyển màn
+    // ⚡ Trạng thái chuyển màn
     private boolean levelComplete = false;
     private long levelCompleteTime = 0;
     private final int LEVEL_DELAY_MS = 5000; // 5 giây chờ
@@ -68,6 +69,7 @@ public class GameManager {
         this.gameOver = false;
         this.gameWin = false;
         this.levelComplete = false;
+        this.paused = false;
 
         System.out.println("🔹 Loaded Level: " + level);
     }
@@ -76,8 +78,19 @@ public class GameManager {
         loadLevel(currentLevel);
     }
 
+    // ⚙️ Toggle tạm dừng
+    public void togglePause() {
+        paused = !paused;
+        sound.play(14);
+        System.out.println(paused ? "⏸ Game paused" : "▶ Game resumed");
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
     public void update() {
-        if (gameOver || gameWin) return;
+        if (paused || gameOver || gameWin) return;
 
         // 🕒 Nếu vừa hoàn thành level
         if (levelComplete) {
@@ -179,7 +192,7 @@ public class GameManager {
 
             // ⏱ Hiển thị đếm ngược
             long elapsed = System.currentTimeMillis() - levelCompleteTime;
-            int remaining = Math.max(0, 5 - (int)(elapsed / 1000));
+            int remaining = Math.max(0, 5 - (int) (elapsed / 1000));
             g.setColor(Color.YELLOW);
             g.setFont(new Font("Arial", Font.BOLD, 28));
             g.drawString("Next level in: " + remaining + "s", width / 2 - 110, height / 2 + 10);
@@ -188,6 +201,21 @@ public class GameManager {
             g.setColor(Color.WHITE);
             g.drawString("Press N to continue now", width / 2 - 100, height / 2 + 45);
             g.drawString("Press M to return to Menu", width / 2 - 100, height / 2 + 70);
+        }
+
+        // 🛑 Hiển thị PAUSE MENU
+        if (paused) {
+            g.setColor(new Color(0, 0, 0, 150));
+            g.fillRect(0, 0, width, height);
+
+            g.setFont(new Font("Arial", Font.BOLD, 40));
+            g.setColor(Color.YELLOW);
+            g.drawString("PAUSED", width / 2 - 80, height / 2 - 40);
+
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g.setColor(Color.WHITE);
+            g.drawString("Press C to Continue", width / 2 - 90, height / 2 + 10);
+            g.drawString("Press M to return to Menu", width / 2 - 100, height / 2 + 40);
         }
 
         // Game over / Win text
@@ -207,6 +235,16 @@ public class GameManager {
         if (key == KeyEvent.VK_LEFT) leftPressed = true;
         if (key == KeyEvent.VK_RIGHT) rightPressed = true;
 
+        // ⏸️ Toggle pause bằng phím P
+        if (key == KeyEvent.VK_P) {
+            togglePause();
+        }
+
+        // ▶️ Tiếp tục khi pause
+        if (paused && key == KeyEvent.VK_C) {
+            togglePause();
+        }
+
         if (key == KeyEvent.VK_R && (gameOver || gameWin)) reset();
 
         // 🟢 Qua màn sớm bằng phím N
@@ -214,8 +252,8 @@ public class GameManager {
             goToNextLevel();
         }
 
-        // 🟠 Quay lại menu ở bất kỳ trạng thái thắng / hoàn thành
-        if ((levelComplete || gameWin || gameOver) && key == KeyEvent.VK_M) {
+        // 🟠 Quay lại menu (ở pause / win / over / complete)
+        if ((paused || levelComplete || gameWin || gameOver) && key == KeyEvent.VK_M) {
             if (onReturnToMenu != null) onReturnToMenu.run();
         }
     }

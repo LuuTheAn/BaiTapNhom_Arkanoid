@@ -23,6 +23,7 @@ public class Sound {
             soundURLs[11] = getClass().getResource("/sound/paddle2.wav");
             soundURLs[12] = getClass().getResource("/sound/ballout.wav");
             soundURLs[13] = getClass().getResource("/sound/finalwin.wav");
+            soundURLs[14] = getClass().getResource("/sound/pause.wav");
             // 🔹 Load toàn bộ âm thanh
             for (int i = 0; i < soundURLs.length; i++) {
                 if (soundURLs[i] != null) {

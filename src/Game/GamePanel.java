@@ -25,7 +25,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         gameManager = new GameManager(WIDTH, HEIGHT);
         timer = new Timer(1000 / 60, this);
 
-        // ✅ GÁN CALLBACK CHO GAME MANAGER
+        // ✅ GÁN CALLBACK CHO GAME MANAGER (quay về menu)
         gameManager.setOnReturnToMenu(() -> {
             SwingUtilities.invokeLater(() -> {
                 if (container != null) {
@@ -33,7 +33,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     cl.show(container, "MENU");
                     timer.stop();
 
-                    // ✅ Gọi phát lại nhạc nền menu
+                    // ✅ Phát lại nhạc nền của menu
                     for (Component comp : container.getComponents()) {
                         if (comp instanceof MenuPanel menuPanel) {
                             menuPanel.resumeBackgroundMusic();
@@ -49,8 +49,11 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
         try {
             var url = getClass().getResource("/img/game_bg.jpg");
-            backgroundImage = ImageIO.read(url);
-        } catch (Exception e) {
+            if (url != null)
+                backgroundImage = ImageIO.read(url);
+            else
+                backgroundImage = null;
+        } catch (IOException e) {
             System.out.println("Không tìm thấy ảnh nền, dùng nền đen mặc định");
             backgroundImage = null;
         }
@@ -60,18 +63,17 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         this.container = container;
     }
 
-    // 🔹 Gọi khi bắt đầu chơi level
+    // 🔹 Gọi khi bắt đầu chơi level cụ thể
     public void startGame(int level) {
         this.currentLevel = level;
-        gameManager.loadLevel(level); // 👉 gọi hàm mới trong GameManager
+        gameManager.loadLevel(level);
         timer.start();
 
-        // đảm bảo focus nhận phím
         requestFocusInWindow();
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
-    // 🔹 Giữ lại cho trường hợp reset từ trong game
+    // 🔹 Cho trường hợp reset từ trong game
     public void startGame() {
         startGame(currentLevel);
     }
@@ -79,9 +81,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (backgroundImage != null) {
+
+        if (backgroundImage != null)
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        }
+
         gameManager.render((Graphics2D) g);
     }
 
@@ -95,22 +98,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        // 🔹 Khi ấn M ở trạng thái Game Over/Win → quay về menu
+        // 🔹 Khi ấn M ở trạng thái Game Over / Win → quay về menu
         if ((gameManager.isGameOver() || gameManager.isGameWin()) && key == KeyEvent.VK_M) {
-            if (container != null) {
-                CardLayout cl = (CardLayout) container.getLayout();
-                cl.show(container, "MENU");
-                timer.stop();
+            returnToMenuByKey();
+            return;
+        }
 
-                // ✅ Gọi phát lại nhạc nền menu
-                for (Component comp : container.getComponents()) {
-                    if (comp instanceof MenuPanel menuPanel) {
-                        menuPanel.resumeBackgroundMusic();
-                        break;
-                    }
-                }
-                System.out.println("↩ Quay về MENU bằng phím M.");
-            }
+        // 🔹 Khi đang ở trạng thái hoàn thành màn (LEVEL COMPLETE)
+        if (key == KeyEvent.VK_M || key == KeyEvent.VK_N) {
+            gameManager.onKeyPressed(key);
+            return;
         }
 
         gameManager.onKeyPressed(key);
@@ -128,5 +125,27 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     public void addNotify() {
         super.addNotify();
         requestFocusInWindow();
+    }
+
+    // 🔹 Hàm riêng xử lý quay lại menu
+    private void returnToMenuByKey() {
+        if (container == null) {
+            System.out.println("⚠ container null, không quay lại menu được!");
+            return;
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            CardLayout cl = (CardLayout) container.getLayout();
+            cl.show(container, "MENU");
+            timer.stop();
+
+            for (Component comp : container.getComponents()) {
+                if (comp instanceof MenuPanel menuPanel) {
+                    menuPanel.resumeBackgroundMusic();
+                    break;
+                }
+            }
+            System.out.println("↩ Quay về MENU bằng phím M.");
+        });
     }
 }

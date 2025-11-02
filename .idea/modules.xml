@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BTL.iml" filepath="$PROJECT_DIR$/BTL.iml" />
       <module fileurl="file://$PROJECT_DIR$/resources/resources.iml" filepath="$PROJECT_DIR$/resources/resources.iml" />
+      <module fileurl="file://$PROJECT_DIR$/week3.iml" filepath="$PROJECT_DIR$/week3.iml" />
     </modules>
   </component>
 </project>

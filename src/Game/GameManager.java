@@ -19,6 +19,7 @@ public class GameManager {
     private List<Brick> bricks;
     private PowerUpManager powerUpManager;
 
+    // SỬA 1: Đã có 'score' ở đây, không cần khai báo lại
     private int score = 0, lives = 3;
     private boolean leftPressed = false, rightPressed = false;
     private boolean gameOver = false;
@@ -85,6 +86,11 @@ public class GameManager {
         System.out.println(paused ? "⏸ Game paused" : "▶ Game resumed");
     }
 
+    // SỬA 2: Thêm hàm 'addScore' (lấy từ code bị lạc của bạn)
+    public void addScore(int points) {
+        this.score += points;
+    }
+
     public boolean isPaused() {
         return paused;
     }
@@ -109,25 +115,32 @@ public class GameManager {
         ball.bounceOffWalls(width, height);
         ball.bounceOff(paddle);
 
-        // Brick collision
+        // SỬA 3: Logic va chạm gạch (đã được dọn dẹp và sửa lỗi)
         Brick hitBrick = null;
         for (Brick brick : bricks) {
             if (!brick.isDestroyed() && ball.bounceOff(brick)) {
-                hitBrick = brick;
+                hitBrick = brick; // 1. Ghi nhớ gạch đã bị va chạm
                 brick.takeHit();
 
                 if (brick.isDestroyed() && !(brick instanceof UnbreakableBrick)) {
-                    score += 10;
+                    addScore(10); // 2. Dùng hàm addScore()
                     powerUpManager.spawnPowerUp(brick);
                 }
-                break;
+                break; // Chỉ xử lý 1 viên gạch mỗi frame
             }
         }
 
-        if (hitBrick instanceof ExplosiveBrick)
-            explodeBrick((ExplosiveBrick) hitBrick);
+        // SỬA 4: Xử lý nổ (Phải đặt BÊN NGOÀI vòng lặp 'for')
+        // Dùng 'hitBrick' đã ghi nhớ ở trên
+        if (hitBrick != null && hitBrick.isDestroyed() && hitBrick instanceof ExplosiveBrick) {
+            // 3. Gọi hàm explode() của ExplosiveBrick (đúng logic OOP)
+            // Truyền vào danh sách gạch và chính GameManager này
+            ((ExplosiveBrick) hitBrick).explode(this.bricks, this);
+        }
 
         powerUpManager.update(ball, paddle, height);
+
+        // 4. Xóa tất cả gạch đã bị phá hủy (kể cả gạch bị nổ)
         bricks.removeIf(Brick::isDestroyed);
 
         // 🏆 Kiểm tra thắng level
@@ -263,34 +276,7 @@ public class GameManager {
         if (key == KeyEvent.VK_RIGHT) rightPressed = false;
     }
 
-    private void explodeBrick(ExplosiveBrick center) {
-        int explosionRange = 1;
-        int bw = center.getWidth();
-        int bh = center.getHeight();
-        List<Brick> toDestroy = new ArrayList<>();
-
-        for (Brick b : bricks) {
-            if (b.isDestroyed() || b instanceof UnbreakableBrick) continue;
-
-            int dx = Math.abs(b.getX() - center.getX()) / bw;
-            int dy = Math.abs(b.getY() - center.getY()) / bh;
-
-            if (dx <= explosionRange && dy <= explosionRange)
-                toDestroy.add(b);
-        }
-
-        for (Brick b : toDestroy) {
-            b.takeHit();
-            if (b instanceof ExplosiveBrick && b != center)
-                explodeBrick((ExplosiveBrick) b);
-            if (b.isDestroyed() && !(b instanceof UnbreakableBrick))
-                score += 10;
-        }
-
-        bricks.removeIf(Brick::isDestroyed);
-        System.out.println("💥 Explosion destroyed " + toDestroy.size() + " bricks!");
-    }
-
     public boolean isGameOver() { return gameOver; }
     public boolean isGameWin() { return gameWin; }
-}
+
+} // <-- Dấu ngoặc kết thúc lớp GameManager. Mọi code bị lạc bên ngoài đã bị xóa.

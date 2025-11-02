@@ -2,15 +2,33 @@ package entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class BrickFactory {
 
-    // 🔹 Hàm tạo level mặc định (nếu không có level cụ thể)
+    private static final Random random = new Random();
+
+    // 🔹 Hàm tạo level mặc định
     public static List<Brick> createDefaultBricks() {
         return createLevel(1);
     }
 
-    // 🔹 Hàm chính để tạo bố cục gạch theo level
+    // 🔹 Hàm tạo ngẫu nhiên một viên gạch theo tỉ lệ
+    private static Brick createRandomBrick(int x, int y, int width, int height) {
+        double chance = random.nextDouble() * 100;
+
+        if (chance < 60.0) {
+            return new NormalBrick(x, y, width, height);
+        } else if (chance < 90.0) {
+            return new StrongBrick(x, y, width, height);
+        } else if (chance < 99.9) {
+            return new ExplosiveBrick(x, y, width, height);
+        } else {
+            return new UnbreakableBrick(x, y, width, height);
+        }
+    }
+
+    // 🔹 Hàm tạo bricks theo level
     public static List<Brick> createLevel(int level) {
         List<Brick> bricks = new ArrayList<>();
         int brickWidth = 40;
@@ -18,6 +36,7 @@ public class BrickFactory {
         int startY = 50;
 
         switch (level) {
+
             // 🧱 LEVEL 1 – Cơ bản, xen kẽ các loại gạch
             case 1 -> {
                 for (int row = 0; row < 7; row++) {
@@ -68,7 +87,7 @@ public class BrickFactory {
                         int x = col * brickWidth;
                         int y = startY + row * brickHeight;
 
-                        boolean isBorder = (row == 0 || row == rows - 1 || col == 0 || col == cols - 1);
+                        boolean isBorder = (row == 0 || col == 0 || col == cols - 1);
                         if (isBorder) {
                             bricks.add(new UnbreakableBrick(x, y, brickWidth, brickHeight));
                         } else if ((row + col) % 4 == 0) {
@@ -80,43 +99,38 @@ public class BrickFactory {
                 }
             }
 
-            // 🌈 LEVEL 4 – Xen kẽ màu và loại ngẫu nhiên (vui mắt)
+            // 🌈 LEVEL 4 – Random theo tỉ lệ 60/30/9.9/0.1
             case 4 -> {
                 for (int row = 0; row < 8; row++) {
                     for (int col = 0; col < 20; col++) {
                         int x = col * brickWidth;
                         int y = startY + row * brickHeight;
-                        int pattern = (row + col) % 4;
-
-                        switch (pattern) {
-                            case 0 -> bricks.add(new NormalBrick(x, y, brickWidth, brickHeight));
-                            case 1 -> bricks.add(new StrongBrick(x, y, brickWidth, brickHeight));
-                            case 2 -> bricks.add(new ExplosiveBrick(x, y, brickWidth, brickHeight));
-                            case 3 -> bricks.add(new UnbreakableBrick(x, y, brickWidth, brickHeight));
-                        }
+                        bricks.add(createRandomBrick(x, y, brickWidth, brickHeight));
                     }
                 }
             }
 
-            // 🔹 LEVEL 5 – Dạng sóng (zigzag)
+            // 🔹 LEVEL 5 – Zigzag + random thêm cho vui mắt
             case 5 -> {
                 for (int row = 0; row < 8; row++) {
                     int offsetX = (row % 2 == 0) ? 0 : brickWidth / 2;
                     for (int col = 0; col < 20; col++) {
                         int x = offsetX + col * brickWidth;
                         int y = startY + row * brickHeight;
-
-                        if (row % 2 == 0)
-                            bricks.add(new StrongBrick(x, y, brickWidth, brickHeight));
-                        else
-                            bricks.add(new NormalBrick(x, y, brickWidth, brickHeight));
+                        bricks.add(createRandomBrick(x, y, brickWidth, brickHeight));
                     }
                 }
             }
 
-            // Mặc định nếu không khớp level
+            // 🔸 LEVEL khác → random toàn bộ
             default -> {
-                return createDefaultBricks();
+                for (int row = 0; row < 8; row++) {
+                    for (int col = 0; col < 20; col++) {
+                        int x = col * brickWidth;
+                        int y = startY + row * brickHeight;
+                        bricks.add(createRandomBrick(x, y, brickWidth, brickHeight));
+                    }
+                }
             }
         }
 

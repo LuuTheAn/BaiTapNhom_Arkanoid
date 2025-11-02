@@ -78,6 +78,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         startGame(currentLevel);
     }
 
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

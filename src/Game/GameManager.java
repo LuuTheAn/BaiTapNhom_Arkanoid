@@ -21,6 +21,7 @@ public class GameManager {
 
     // SỬA 1: Đã có 'score' ở đây, không cần khai báo lại
     private int score = 0, lives = 3;
+    private int totalScore = 0;   // tổng điểm cả game
     private boolean leftPressed = false, rightPressed = false;
     private boolean gameOver = false;
     private boolean gameWin = false;
@@ -38,6 +39,9 @@ public class GameManager {
     private final int LEVEL_DELAY_MS = 5000; // 5 giây chờ
 
     private Runnable onReturnToMenu; // callback quay về menu
+    private final LeaderboardManager leaderboardManager = new LeaderboardManager();
+
+    private boolean scoreSaved = false; // chỉ lưu điểm 1 lần mỗi ván
 
     public GameManager(int width, int height) {
         this.width = width;
@@ -54,10 +58,62 @@ public class GameManager {
         reset();
     }
 
+    // 🎮 Reset toàn bộ game (chơi lại từ đầu)
+    public void resetGame() {
+        System.out.println("🔁 FULL RESET GAME CALLED");
+        score = 0;
+        totalScore = 0;
+        lives = 3;
+        currentLevel = 1;
+
+        gameOver = false;
+        gameWin = false;
+        paused = false;
+        levelComplete = false;
+        scoreSaved = false;
+
+        loadLevel(currentLevel);
+        System.out.println("✅ Game reset hoàn toàn! totalScore = " + totalScore);
+    }
+
+    // 🔁 Bắt đầu một game mới hoàn toàn (khi ấn R sau khi win hoặc thua)
+    public void startNewGame() {
+        System.out.println("🎮 Start New Game!");
+        totalScore = 0;
+        score = 0;
+        lives = 3;
+        currentLevel = 1;
+        gameOver = false;
+        gameWin = false;
+        paused = false;
+        levelComplete = false;
+        scoreSaved = false;
+        loadLevel(currentLevel);
+    }
+
+
+    // 🎯 Reset session chơi mới (khi quay lại menu hoặc chọn level mới)
+    public void resetSession() {
+        System.out.println("🔄 Reset session (return to menu or new play)!");
+        totalScore = 0;
+        score = 0;
+        lives = 3;
+        currentLevel = 1;
+        gameOver = false;
+        gameWin = false;
+        paused = false;
+        levelComplete = false;
+        scoreSaved = false;
+        // ❗Không loadLevel ở đây — để LevelSelectPanel gọi loadLevel(level) tương ứng
+    }
+
+
+
     public void setOnReturnToMenu(Runnable callback) {
         this.onReturnToMenu = callback;
     }
 
+    // 🔹 Load 1 level cụ thể
     public void loadLevel(int level) {
         this.currentLevel = level;
         this.bricks = BrickFactory.createLevel(level);
@@ -72,7 +128,7 @@ public class GameManager {
         this.levelComplete = false;
         this.paused = false;
 
-        System.out.println("🔹 Loaded Level: " + level);
+        System.out.println("🔹 Loaded Level: " + level + " | totalScore = " + totalScore);
     }
 
     public void reset() {
@@ -95,6 +151,7 @@ public class GameManager {
         return paused;
     }
 
+    // 🔄 Vòng update logic
     public void update() {
         if (paused || gameOver || gameWin) return;
 
@@ -107,40 +164,39 @@ public class GameManager {
             return;
         }
 
-        // Paddle control
+        // 🎮 Điều khiển paddle
         if (leftPressed) paddle.moveLeft();
         if (rightPressed) paddle.moveRight(width);
 
+        // ⚽ Cập nhật bóng
         ball.update(1.0 / 60);
         ball.bounceOffWalls(width, height);
         ball.bounceOff(paddle);
 
-        // SỬA 3: Logic va chạm gạch (đã được dọn dẹp và sửa lỗi)
+        // 💥 Va chạm gạch
         Brick hitBrick = null;
         for (Brick brick : bricks) {
             if (!brick.isDestroyed() && ball.bounceOff(brick)) {
-                hitBrick = brick; // 1. Ghi nhớ gạch đã bị va chạm
+                hitBrick = brick;
                 brick.takeHit();
 
                 if (brick.isDestroyed() && !(brick instanceof UnbreakableBrick)) {
-                    addScore(10); // 2. Dùng hàm addScore()
+                    addScore(10);
                     powerUpManager.spawnPowerUp(brick);
                 }
-                break; // Chỉ xử lý 1 viên gạch mỗi frame
+                break; // chỉ xử lý 1 viên gạch mỗi frame
             }
         }
 
-        // SỬA 4: Xử lý nổ (Phải đặt BÊN NGOÀI vòng lặp 'for')
-        // Dùng 'hitBrick' đã ghi nhớ ở trên
+        // 💣 Nếu là ExplosiveBrick thì gọi explode() trong class của nó
         if (hitBrick != null && hitBrick.isDestroyed() && hitBrick instanceof ExplosiveBrick) {
-            // 3. Gọi hàm explode() của ExplosiveBrick (đúng logic OOP)
-            // Truyền vào danh sách gạch và chính GameManager này
             ((ExplosiveBrick) hitBrick).explode(this.bricks, this);
         }
 
+        // ⚡ Cập nhật power-up
         powerUpManager.update(ball, paddle, height);
 
-        // 4. Xóa tất cả gạch đã bị phá hủy (kể cả gạch bị nổ)
+        // 🧹 Xóa gạch đã phá hủy
         bricks.removeIf(Brick::isDestroyed);
 
         // 🏆 Kiểm tra thắng level
@@ -148,9 +204,12 @@ public class GameManager {
         if (allUnbreakable && !levelComplete) {
             sound.play(6);
             ProgressManager.unlockNextLevel(currentLevel);
+
+            totalScore += score;
+            System.out.println("⭐ Level " + currentLevel + " hoàn thành! TotalScore = " + totalScore);
+
             levelComplete = true;
             levelCompleteTime = System.currentTimeMillis();
-            System.out.println("🎯 Level " + currentLevel + " hoàn thành!");
         }
 
         // 💔 Mất bóng
@@ -159,6 +218,7 @@ public class GameManager {
             if (lives <= 0) {
                 gameOver = true;
                 sound.play(5);
+                saveScoreToLeaderboardIfNeeded();
             } else {
                 sound.play(12);
                 ball.reset(width / 2, height / 2, 4, -4);
@@ -166,6 +226,7 @@ public class GameManager {
         }
     }
 
+    // ▶ Sang level kế tiếp
     private void goToNextLevel() {
         levelComplete = false;
 
@@ -175,11 +236,29 @@ public class GameManager {
         } else {
             gameWin = true;
             sound.play(13);
-            System.out.println("🏆 YOU WIN ALL LEVELS!");
+            saveScoreToLeaderboardIfNeeded();
+            System.out.println("🏆 YOU WIN ALL LEVELS! Final Score = " + totalScore);
         }
     }
 
+    // 🏆 Lưu điểm vào leaderboard (chỉ 1 lần mỗi phiên)
+    private void saveScoreToLeaderboardIfNeeded() {
+        if (scoreSaved) {
+            System.out.println("ℹ️ Score already saved for this session, skipping.");
+            return;
+        }
+        if (totalScore <= 0) {
+            System.out.println("ℹ️ No score to save.");
+            return;
+        }
+        leaderboardManager.addScore(totalScore);
+        scoreSaved = true;
+        System.out.println("💾 Saved TOTAL score: " + totalScore + " vào bảng xếp hạng!");
+    }
+
+    // 🎨 Render
     public void render(Graphics2D g) {
+        // 🌄 Vẽ nền
         if (backgroundImage != null)
             g.drawImage(backgroundImage, 0, 0, width, height, null);
         else {
@@ -187,87 +266,103 @@ public class GameManager {
             g.fillRect(0, 0, width, height);
         }
 
+        // 🧱 Vẽ đối tượng
         paddle.render(g);
         ball.render(g);
         bricks.forEach(b -> b.render(g));
         powerUpManager.render(g);
 
+        // 🎨 HUD góc
+        g.setFont(new Font("Arial", Font.PLAIN, 16));
         g.setColor(Color.WHITE);
         g.drawString("Score: " + score, 10, 20);
-        g.drawString("Lives: " + lives, width - 70, 20);
-        g.drawString("Level: " + currentLevel, width / 2 - 30, 20);
+        g.setColor(Color.YELLOW);
+        g.drawString("Total: " + totalScore, 10, 40);
 
-        // 🕒 Hiển thị hoàn thành màn
+        g.setColor(Color.WHITE);
+        String levelText = "Level: " + currentLevel;
+        String livesText = "Lives: " + lives;
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(levelText, width - fm.stringWidth(levelText) - 10, 20);
+        g.drawString(livesText, width - fm.stringWidth(livesText) - 10, 40);
+
+        // 🌟 Hiệu ứng khi hoàn thành level
         if (levelComplete) {
-            g.setFont(new Font("Arial", Font.BOLD, 36));
-            g.setColor(Color.GREEN);
-            g.drawString("LEVEL " + currentLevel + " COMPLETE!", width / 2 - 180, height / 2 - 50);
+            drawCenteredText(g, "LEVEL " + currentLevel + " COMPLETE!", Color.GREEN, "Comic Sans MS", 48, height / 2 - 80);
+            drawCenteredText(g, "Total Score: " + totalScore, Color.ORANGE, "Comic Sans MS", 28, height / 2 - 30);
 
-            // ⏱ Hiển thị đếm ngược
             long elapsed = System.currentTimeMillis() - levelCompleteTime;
             int remaining = Math.max(0, 5 - (int) (elapsed / 1000));
-            g.setColor(Color.YELLOW);
-            g.setFont(new Font("Arial", Font.BOLD, 28));
-            g.drawString("Next level in: " + remaining + "s", width / 2 - 110, height / 2 + 10);
+            drawCenteredText(g, "Next level in: " + remaining + "s", Color.YELLOW, "Arial", 26, height / 2 + 10);
 
-            g.setFont(new Font("Arial", Font.PLAIN, 18));
-            g.setColor(Color.WHITE);
-            g.drawString("Press N to continue now", width / 2 - 100, height / 2 + 45);
-            g.drawString("Press M to return to Menu", width / 2 - 100, height / 2 + 70);
+            drawCenteredText(g, "Press N to continue now", Color.WHITE, "Arial", 20, height / 2 + 50);
+            drawCenteredText(g, "Press M to return to Menu", Color.WHITE, "Arial", 20, height / 2 + 75);
         }
 
-        // 🛑 Hiển thị PAUSE MENU
+        // ⏸ Khi pause
         if (paused) {
             g.setColor(new Color(0, 0, 0, 150));
             g.fillRect(0, 0, width, height);
 
-            g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.setColor(Color.YELLOW);
-            g.drawString("PAUSED", width / 2 - 80, height / 2 - 40);
-
-            g.setFont(new Font("Arial", Font.PLAIN, 20));
-            g.setColor(Color.WHITE);
-            g.drawString("Press C to Continue", width / 2 - 90, height / 2 + 10);
-            g.drawString("Press M to return to Menu", width / 2 - 100, height / 2 + 40);
+            drawCenteredText(g, "PAUSED", Color.YELLOW, "Arial", 48, height / 2 - 30);
+            drawCenteredText(g, "Press C to continue", Color.WHITE, "Arial", 24, height / 2 + 20);
+            drawCenteredText(g, "Press M to return to Menu", Color.WHITE, "Arial", 24, height / 2 + 50);
         }
 
-        // Game over / Win text
+        // 💀 Game Over / 🎉 You Win
         if (gameOver || gameWin) {
-            g.setFont(new Font("Arial", Font.BOLD, 36));
-            g.setColor(gameOver ? Color.RED : Color.GREEN);
-            g.drawString(gameOver ? "GAME OVER" : "YOU WIN!", width / 2 - 100, height / 2);
+            String mainText = gameOver ? "GAME OVER" : "YOU WIN!";
+            Color mainColor = gameOver ? Color.RED : new Color(0, 255, 100);
 
-            g.setFont(new Font("Arial", Font.PLAIN, 18));
-            g.setColor(Color.WHITE);
-            g.drawString("Press R to Restart", width / 2 - 80, height / 2 + 40);
-            g.drawString("Press M for Menu", width / 2 - 80, height / 2 + 65);
+            drawCenteredText(g, mainText, mainColor, "Arial Black", 50, height / 2 - 60);
+            drawCenteredText(g, "Total Score: " + totalScore, Color.ORANGE, "Comic Sans MS", 28, height / 2 - 15);
+            drawCenteredText(g, "Press R to Restart", Color.WHITE, "Arial", 20, height / 2 + 30);
+            drawCenteredText(g, "Press M for Menu", Color.WHITE, "Arial", 20, height / 2 + 55);
         }
     }
 
+    private void drawCenteredText(Graphics2D g, String text, Color color, String fontName, int fontSize, int y) {
+        Font font = new Font(fontName, Font.BOLD, fontSize);
+        g.setFont(font);
+        FontMetrics fm = g.getFontMetrics();
+        int x = (width - fm.stringWidth(text)) / 2;
+
+        // Tạo bóng mờ nhẹ
+        g.setColor(Color.BLACK);
+        g.drawString(text, x + 2, y + 2);
+
+        // Chữ chính
+        g.setColor(color);
+        g.drawString(text, x, y);
+    }
+
+    // ⌨️ Xử lý phím
     public void onKeyPressed(int key) {
         if (key == KeyEvent.VK_LEFT) leftPressed = true;
         if (key == KeyEvent.VK_RIGHT) rightPressed = true;
 
-        // ⏸️ Toggle pause bằng phím P
-        if (key == KeyEvent.VK_P) {
-            togglePause();
+        if (key == KeyEvent.VK_P) togglePause();
+        if (paused && key == KeyEvent.VK_C) togglePause();
+
+        // 🔁 Restart game khi thắng hoặc thua
+        if (key == KeyEvent.VK_R && (gameOver || gameWin)) {
+            System.out.println("🔁 Restart requested!");
+            startNewGame();
         }
 
-        // ▶️ Tiếp tục khi pause
-        if (paused && key == KeyEvent.VK_C) {
-            togglePause();
-        }
+        // ▶ Next level thủ công
+        if (levelComplete && key == KeyEvent.VK_N) goToNextLevel();
 
-        if (key == KeyEvent.VK_R && (gameOver || gameWin)) reset();
-
-        // 🟢 Qua màn sớm bằng phím N
-        if (levelComplete && key == KeyEvent.VK_N) {
-            goToNextLevel();
-        }
-
-        // 🟠 Quay lại menu (ở pause / win / over / complete)
+        // 🏠 Trở về menu
         if ((paused || levelComplete || gameWin || gameOver) && key == KeyEvent.VK_M) {
+            System.out.println("🏠 Quay lại menu...");
+            saveScoreToLeaderboardIfNeeded();
+
+            // ✅ Reset session sạch trước khi về menu
+            resetSession();
+
             if (onReturnToMenu != null) onReturnToMenu.run();
+            System.out.println("🏠 Trở về menu — totalScore đã reset = " + totalScore);
         }
     }
 

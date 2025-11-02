@@ -12,7 +12,7 @@ public abstract class PowerUp extends GameObject {
     public PowerUp(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
-
+//abc
     // cập nhật theo frame
     public void update() {
         y += speed;

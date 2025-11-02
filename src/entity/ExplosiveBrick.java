@@ -16,7 +16,7 @@ public class ExplosiveBrick extends Brick {
     private static BufferedImage[] textures;
     private static boolean loaded = false;
 
-    private static final Sound sound = new Sound();
+    private static final Sound sound = Sound.getInstance();
     private BufferedImage image;
 
     public ExplosiveBrick(int x, int y, int width, int height) {

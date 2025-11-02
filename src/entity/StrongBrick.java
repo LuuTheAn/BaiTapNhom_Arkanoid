@@ -9,7 +9,7 @@ import java.io.IOException;
 public class StrongBrick extends Brick {
     private static BufferedImage fullHpImage;
     private static BufferedImage halfHpImage;
-    private static Sound sound = new Sound(); // 🔊 Hệ thống âm thanh dùng chung
+    private static Sound sound = Sound.getInstance(); // 🔊 Hệ thống âm thanh dùng chung
 
     public StrongBrick(int x, int y, int width, int height) {
         super(x, y, width, height, 2);

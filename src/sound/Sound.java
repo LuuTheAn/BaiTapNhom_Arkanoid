@@ -4,11 +4,13 @@ import javax.sound.sampled.*;
 import java.net.URL;
 
 public class Sound {
-    private Clip[] clips = new Clip[15];
+    private static Sound instance;  // 🔹 Singleton instance
+    private final Clip[] clips = new Clip[15];
 
-    public Sound() {
+    // 🔒 Constructor private để không cho tạo bên ngoài
+    private Sound() {
         try {
-            URL soundURLs[] = new URL[15];
+            URL[] soundURLs = new URL[15];
             soundURLs[0] = getClass().getResource("/sound/nen.wav");
             soundURLs[1] = getClass().getResource("/sound/click.wav");
             soundURLs[2] = getClass().getResource("/sound/break.wav");
@@ -24,6 +26,7 @@ public class Sound {
             soundURLs[12] = getClass().getResource("/sound/ballout.wav");
             soundURLs[13] = getClass().getResource("/sound/finalwin.wav");
             soundURLs[14] = getClass().getResource("/sound/pause.wav");
+
             // 🔹 Load toàn bộ âm thanh
             for (int i = 0; i < soundURLs.length; i++) {
                 if (soundURLs[i] != null) {
@@ -33,7 +36,7 @@ public class Sound {
                 }
             }
 
-            // 🔹 Làm nóng mixer (tránh delay lần đầu)
+            // 🔹 Làm nóng mixer
             if (clips[1] != null) {
                 clips[1].setFramePosition(0);
                 clips[1].start();
@@ -43,6 +46,14 @@ public class Sound {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // 🧠 Phương thức truy cập instance duy nhất
+    public static synchronized Sound getInstance() {
+        if (instance == null) {
+            instance = new Sound();
+        }
+        return instance;
     }
 
     public void play(int i) {
@@ -62,13 +73,10 @@ public class Sound {
         clips[i].stop();
     }
 
-    // ✅ Hàm chỉnh âm lượng cho từng clip
     public void setVolume(int i, float volume) {
         if (clips[i] == null) return;
         try {
             FloatControl gainControl = (FloatControl) clips[i].getControl(FloatControl.Type.MASTER_GAIN);
-
-            // volume = 1.0f -> bình thường; 0.5f -> nhỏ 50%; 0.2f -> nhỏ 80%
             float dB = (float) (Math.log10(volume) * 20);
             gainControl.setValue(dB);
         } catch (Exception e) {

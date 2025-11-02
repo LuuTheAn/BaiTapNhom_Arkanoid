@@ -20,7 +20,7 @@ public class LeaderboardPanel extends JPanel {
     public LeaderboardPanel(JPanel container, MenuPanel menuPanel) {
         this.container = container;
         this.menuPanel = menuPanel;
-        this.sound = new Sound();
+        this.sound = Sound.getInstance();
 
         // 🔹 Load background
         try {

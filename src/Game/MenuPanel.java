@@ -33,7 +33,7 @@ public class MenuPanel extends JPanel {
         }
 
         // 🔹 Âm thanh nền
-        sound = new Sound();
+        sound = Sound.getInstance();
         sound.setVolume(0, 0.3f);
         sound.loop(0);
 

@@ -16,7 +16,7 @@ public class Ball extends MovableObject {
 
     private static final int FAST_BALL_DURATION = 600;
 
-    private static Sound sound = new Sound(); // 🔊 Hệ thống âm thanh dùng chung
+    private static Sound sound = Sound.getInstance(); // 🔊 Hệ thống âm thanh dùng chung
 
     public boolean isFastBallActive() {
         return isFastBallActive;

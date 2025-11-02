@@ -17,7 +17,7 @@ public class LevelSelectPanel extends JPanel {
 
     public LevelSelectPanel(JPanel container) {
         this.container = container;
-        this.sound = new Sound();
+        this.sound = Sound.getInstance();
 
         setLayout(new GridBagLayout());
         setBackground(Color.BLACK);

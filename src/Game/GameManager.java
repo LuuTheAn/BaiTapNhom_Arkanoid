@@ -54,7 +54,7 @@ public class GameManager {
             backgroundImage = null;
         }
 
-        sound = new Sound();
+        sound = Sound.getInstance();
         reset();
     }
 

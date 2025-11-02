@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PowerUpManager {
     private final List<PowerUp> activePowerUps = new ArrayList<>();
-    private static final Sound sound = new Sound();
+    private static final Sound sound = Sound.getInstance();
 
     // Thời gian kết thúc hiệu ứng
     private long expandEndTime = 0;

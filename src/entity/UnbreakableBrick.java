@@ -10,8 +10,7 @@ import java.util.Random;
 public class UnbreakableBrick extends Brick {
     private static BufferedImage[] textures; // ✅ Danh sách ảnh có thể dùng
     private static boolean loaded = false;
-    private static final Sound sound = new Sound();
-
+    private static final Sound sound = Sound.getInstance();
     private BufferedImage image; // Ảnh riêng cho viên này
 
     public UnbreakableBrick(int x, int y, int width, int height) {

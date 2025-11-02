@@ -11,7 +11,7 @@ public class NormalBrick extends Brick {
     private static BufferedImage[] textures; // ✅ nhiều ảnh khác nhau
     private static boolean loaded = false;
     private BufferedImage image;
-    private static final Sound sound = new Sound(); // ✅ chỉ load 1 lần âm thanh
+    private static final Sound sound = Sound.getInstance(); // ✅ chỉ load 1 lần âm thanh
 
     public NormalBrick(int x, int y, int width, int height) {
         super(x, y, width, height, 1);

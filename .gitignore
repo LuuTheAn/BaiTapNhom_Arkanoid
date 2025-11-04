@@ -1,0 +1,31 @@
+# ===================================
+# 🧱 PROJECT JAVA (IntelliJ + Maven)
+# ===================================
+
+# 👉 IntelliJ IDEA project files
+.idea/
+*.iml
+
+# 👉 Build output folders
+/out/
+/target/
+
+# 👉 Javadoc (bỏ qua để tránh lỗi 100+ file)
+doc/
+javadoc/
+html/
+
+# 👉 System & backup files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+
+# 👉 VS Code (nếu ai trong nhóm dùng)
+/.vscode/
+
+# ===================================
+# ✅ END
+# ===================================

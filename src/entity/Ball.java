@@ -11,15 +11,21 @@ public class Ball extends MovableObject {
     private double baseDx, baseDy;  // tốc độ gốc để reset
     private boolean isFastBallActive;
     private int fastBallTimer;
-
     private Image ballImage;
-
     private static final int FAST_BALL_DURATION = 600;
 
-    private static Sound sound = Sound.getInstance(); // 🔊 Hệ thống âm thanh dùng chung
+    // 🔊 Hệ thống âm thanh dùng chung
+    private static Sound sound = Sound.getInstance();
 
     public boolean isFastBallActive() {
         return isFastBallActive;
+    }
+
+    public void reverseX() { dx = -dx; }
+    public void reverseY() { dy = -dy; }
+
+    public void update(double deltaTime) {
+        move();
     }
 
     public Ball(int x, int y, int width, int height, double dx, double dy) {
@@ -53,9 +59,6 @@ public class Ball extends MovableObject {
         }
     }
 
-    public void reverseX() { dx = -dx; }
-    public void reverseY() { dy = -dy; }
-
     public void activateFastBall() {
         if (!isFastBallActive) {
             double factor = 1.5; // tăng 50%
@@ -86,10 +89,6 @@ public class Ball extends MovableObject {
 
         isFastBallActive = false;
         fastBallTimer = 0;
-    }
-
-    public void update(double deltaTime) {
-        move();
     }
 
     public void bounceOffWalls(int panelWidth, int panelHeight) {

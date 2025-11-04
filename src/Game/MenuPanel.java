@@ -208,6 +208,7 @@ public class MenuPanel extends JPanel {
         sound.stop(0);
     }
 
+    // 🔹 Phát âm thanh hiệu ứng
     private void playSE(int i) {
         sound.play(i);
     }

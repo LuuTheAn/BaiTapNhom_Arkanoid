@@ -9,7 +9,24 @@ import javax.imageio.ImageIO;
 public class Paddle extends MovableObject {
     private int speed;
     private BufferedImage image; // 🔹 thêm ảnh paddle
+    public int getWidth() {
+        return width;
+    }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    private boolean expanded = false;
+
+    // Getter/Setter
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
     public Paddle(int x, int y, int width, int height, int speed) {
         super(x, y, width, height, 0, 0);
         this.speed = speed * 2;
@@ -47,22 +64,5 @@ public class Paddle extends MovableObject {
         }
     }
 
-    public int getWidth() {
-        return width;
-    }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    private boolean expanded = false;
-
-    // Getter/Setter
-    public boolean isExpanded() {
-        return expanded;
-    }
-
-    public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
-    }
 }

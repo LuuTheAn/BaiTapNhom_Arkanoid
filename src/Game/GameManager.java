@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
@@ -19,7 +18,6 @@ public class GameManager {
     private List<Brick> bricks;
     private PowerUpManager powerUpManager;
 
-    // SỬA 1: Đã có 'score' ở đây, không cần khai báo lại
     private int score = 0, lives = 3;
     private int totalScore = 0;   // tổng điểm cả game
     private boolean leftPressed = false, rightPressed = false;
@@ -40,8 +38,10 @@ public class GameManager {
 
     private Runnable onReturnToMenu; // callback quay về menu
     private final LeaderboardManager leaderboardManager = new LeaderboardManager();
-
     private boolean scoreSaved = false; // chỉ lưu điểm 1 lần mỗi ván
+
+    public boolean isGameOver() { return gameOver; }
+    public boolean isGameWin() { return gameWin; }
 
     public GameManager(int width, int height) {
         this.width = width;
@@ -91,7 +91,6 @@ public class GameManager {
         loadLevel(currentLevel);
     }
 
-
     // 🎯 Reset session chơi mới (khi quay lại menu hoặc chọn level mới)
     public void resetSession() {
         System.out.println("🔄 Reset session (return to menu or new play)!");
@@ -106,8 +105,6 @@ public class GameManager {
         scoreSaved = false;
         // ❗Không loadLevel ở đây — để LevelSelectPanel gọi loadLevel(level) tương ứng
     }
-
-
 
     public void setOnReturnToMenu(Runnable callback) {
         this.onReturnToMenu = callback;
@@ -142,7 +139,6 @@ public class GameManager {
         System.out.println(paused ? "⏸ Game paused" : "▶ Game resumed");
     }
 
-    // SỬA 2: Thêm hàm 'addScore' (lấy từ code bị lạc của bạn)
     public void addScore(int points) {
         this.score += points;
     }
@@ -184,22 +180,17 @@ public class GameManager {
                     addScore(10);
                     powerUpManager.spawnPowerUp(brick);
                 }
-                break; // chỉ xử lý 1 viên gạch mỗi frame
+                break;
             }
         }
 
-        // 💣 Nếu là ExplosiveBrick thì gọi explode() trong class của nó
         if (hitBrick != null && hitBrick.isDestroyed() && hitBrick instanceof ExplosiveBrick) {
             ((ExplosiveBrick) hitBrick).explode(this.bricks, this);
         }
 
-        // ⚡ Cập nhật power-up
         powerUpManager.update(ball, paddle, height);
-
-        // 🧹 Xóa gạch đã phá hủy
         bricks.removeIf(Brick::isDestroyed);
 
-        // 🏆 Kiểm tra thắng level
         boolean allUnbreakable = bricks.stream().allMatch(b -> b instanceof UnbreakableBrick);
         if (allUnbreakable && !levelComplete) {
             sound.play(6);
@@ -212,7 +203,6 @@ public class GameManager {
             levelCompleteTime = System.currentTimeMillis();
         }
 
-        // 💔 Mất bóng
         if (ball.getY() > height) {
             lives--;
             if (lives <= 0) {
@@ -226,7 +216,6 @@ public class GameManager {
         }
     }
 
-    // ▶ Sang level kế tiếp
     private void goToNextLevel() {
         levelComplete = false;
 
@@ -241,7 +230,6 @@ public class GameManager {
         }
     }
 
-    // 🏆 Lưu điểm vào leaderboard (chỉ 1 lần mỗi phiên)
     private void saveScoreToLeaderboardIfNeeded() {
         if (scoreSaved) {
             System.out.println("ℹ️ Score already saved for this session, skipping.");
@@ -256,9 +244,7 @@ public class GameManager {
         System.out.println("💾 Saved TOTAL score: " + totalScore + " vào bảng xếp hạng!");
     }
 
-    // 🎨 Render
     public void render(Graphics2D g) {
-        // 🌄 Vẽ nền
         if (backgroundImage != null)
             g.drawImage(backgroundImage, 0, 0, width, height, null);
         else {
@@ -266,13 +252,11 @@ public class GameManager {
             g.fillRect(0, 0, width, height);
         }
 
-        // 🧱 Vẽ đối tượng
         paddle.render(g);
         ball.render(g);
         bricks.forEach(b -> b.render(g));
         powerUpManager.render(g);
 
-        // 🎨 HUD góc
         g.setFont(new Font("Arial", Font.PLAIN, 16));
         g.setColor(Color.WHITE);
         g.drawString("Score: " + score, 10, 20);
@@ -286,7 +270,6 @@ public class GameManager {
         g.drawString(levelText, width - fm.stringWidth(levelText) - 10, 20);
         g.drawString(livesText, width - fm.stringWidth(livesText) - 10, 40);
 
-        // 🌟 Hiệu ứng khi hoàn thành level
         if (levelComplete) {
             drawCenteredText(g, "LEVEL " + currentLevel + " COMPLETE!", Color.GREEN, "Comic Sans MS", 48, height / 2 - 80);
             drawCenteredText(g, "Total Score: " + totalScore, Color.ORANGE, "Comic Sans MS", 28, height / 2 - 30);
@@ -299,17 +282,14 @@ public class GameManager {
             drawCenteredText(g, "Press M to return to Menu", Color.WHITE, "Arial", 20, height / 2 + 75);
         }
 
-        // ⏸ Khi pause
         if (paused) {
             g.setColor(new Color(0, 0, 0, 150));
             g.fillRect(0, 0, width, height);
-
             drawCenteredText(g, "PAUSED", Color.YELLOW, "Arial", 48, height / 2 - 30);
             drawCenteredText(g, "Press C to continue", Color.WHITE, "Arial", 24, height / 2 + 20);
             drawCenteredText(g, "Press M to return to Menu", Color.WHITE, "Arial", 24, height / 2 + 50);
         }
 
-        // 💀 Game Over / 🎉 You Win
         if (gameOver || gameWin) {
             String mainText = gameOver ? "GAME OVER" : "YOU WIN!";
             Color mainColor = gameOver ? Color.RED : new Color(0, 255, 100);
@@ -327,16 +307,13 @@ public class GameManager {
         FontMetrics fm = g.getFontMetrics();
         int x = (width - fm.stringWidth(text)) / 2;
 
-        // Tạo bóng mờ nhẹ
         g.setColor(Color.BLACK);
         g.drawString(text, x + 2, y + 2);
 
-        // Chữ chính
         g.setColor(color);
         g.drawString(text, x, y);
     }
 
-    // ⌨️ Xử lý phím
     public void onKeyPressed(int key) {
         if (key == KeyEvent.VK_LEFT) leftPressed = true;
         if (key == KeyEvent.VK_RIGHT) rightPressed = true;
@@ -344,21 +321,16 @@ public class GameManager {
         if (key == KeyEvent.VK_P) togglePause();
         if (paused && key == KeyEvent.VK_C) togglePause();
 
-        // 🔁 Restart game khi thắng hoặc thua
         if (key == KeyEvent.VK_R && (gameOver || gameWin)) {
             System.out.println("🔁 Restart requested!");
             startNewGame();
         }
 
-        // ▶ Next level thủ công
         if (levelComplete && key == KeyEvent.VK_N) goToNextLevel();
 
-        // 🏠 Trở về menu
         if ((paused || levelComplete || gameWin || gameOver) && key == KeyEvent.VK_M) {
             System.out.println("🏠 Quay lại menu...");
             saveScoreToLeaderboardIfNeeded();
-
-            // ✅ Reset session sạch trước khi về menu
             resetSession();
 
             if (onReturnToMenu != null) onReturnToMenu.run();
@@ -370,8 +342,4 @@ public class GameManager {
         if (key == KeyEvent.VK_LEFT) leftPressed = false;
         if (key == KeyEvent.VK_RIGHT) rightPressed = false;
     }
-
-    public boolean isGameOver() { return gameOver; }
-    public boolean isGameWin() { return gameWin; }
-
-} // <-- Dấu ngoặc kết thúc lớp GameManager. Mọi code bị lạc bên ngoài đã bị xóa.
+}

@@ -9,14 +9,51 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * {@code LeaderboardPanel} là giao diện hiển thị bảng xếp hạng của trò chơi.
+ * <p>
+ * Panel này cho phép người chơi xem danh sách điểm cao nhất, cùng với
+ * giao diện nền và hiệu ứng đồ họa bo góc. Ngoài ra còn có nút "Back" để
+ * quay về menu chính.
+ * </p>
+ *
+ * <h3>Chức năng chính:</h3>
+ * <ul>
+ *   <li>Hiển thị danh sách top điểm từ {@link LeaderboardManager}</li>
+ *   <li>Tô màu đặc biệt cho top 3 người chơi (vàng, bạc, đồng)</li>
+ *   <li>Cho phép người chơi quay về menu chính bằng nút "Back"</li>
+ *   <li>Tự động tải ảnh nền và cập nhật danh sách khi mở lại</li>
+ * </ul>
+ *
+ * @see LeaderboardManager
+ * @see MenuPanel
+ */
 public class LeaderboardPanel extends JPanel {
+
+    /** Container chính (dùng CardLayout) để chuyển giữa các màn hình. */
     private final JPanel container;
+
+    /** Tham chiếu đến menu chính, dùng để bật lại nhạc nền khi quay về. */
     private final MenuPanel menuPanel;
+
+    /** Nút quay lại menu chính. */
     private final JButton backButton;
+
+    /** Khu vực hiển thị danh sách điểm. */
     private final JPanel scoreListPanel;
+
+    /** Ảnh nền của bảng xếp hạng. */
     private Image backgroundImage;
+
+    /** Hệ thống âm thanh dùng chung. */
     private final Sound sound;
 
+    /**
+     * Khởi tạo panel bảng xếp hạng.
+     *
+     * @param container  panel chứa (CardLayout) cho phép chuyển giữa các màn hình
+     * @param menuPanel  panel menu chính (để bật lại nhạc nền)
+     */
     public LeaderboardPanel(JPanel container, MenuPanel menuPanel) {
         this.container = container;
         this.menuPanel = menuPanel;
@@ -42,7 +79,7 @@ public class LeaderboardPanel extends JPanel {
         titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 42));
         titleLabel.setForeground(new Color(255, 215, 0));
         titleLabel.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(new Color(255, 215, 0), 2, 30), // 🎨 viền bo tròn
+                new RoundedBorder(new Color(255, 215, 0), 2, 30),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
         titleLabel.setOpaque(true);
@@ -55,7 +92,7 @@ public class LeaderboardPanel extends JPanel {
         scoreListPanel.setLayout(new BoxLayout(scoreListPanel, BoxLayout.Y_AXIS));
         scoreListPanel.setBackground(new Color(0, 0, 0, 180));
         scoreListPanel.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(Color.GRAY, 2, 25), // 🎨 viền bo tròn
+                new RoundedBorder(Color.GRAY, 2, 25),
                 BorderFactory.createEmptyBorder(15, 30, 15, 30)
         ));
 
@@ -85,7 +122,13 @@ public class LeaderboardPanel extends JPanel {
         refreshLeaderboard();
     }
 
-    // ✅ Làm mới danh sách xếp hạng
+    /**
+     * Làm mới danh sách điểm xếp hạng.
+     * <p>
+     * Phương thức này tải lại dữ liệu từ {@link LeaderboardManager}
+     * và cập nhật hiển thị của các nhãn điểm trên màn hình.
+     * </p>
+     */
     public void refreshLeaderboard() {
         scoreListPanel.removeAll();
         LeaderboardManager leaderboardManager = new LeaderboardManager();
@@ -121,14 +164,18 @@ public class LeaderboardPanel extends JPanel {
         scoreListPanel.repaint();
     }
 
-    // 🎨 Style cho nút
+    /**
+     * Định dạng giao diện nút cho thống nhất về màu sắc, viền và hiệu ứng hover.
+     *
+     * @param button nút cần được áp dụng style
+     */
     private void styleButton(JButton button) {
         button.setFont(new Font("Arial", Font.BOLD, 24));
         button.setBackground(new Color(50, 50, 50, 200));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(Color.WHITE, 2, 20), // 🎨 bo tròn nút
+                new RoundedBorder(Color.WHITE, 2, 20),
                 BorderFactory.createEmptyBorder(10, 25, 10, 25)
         ));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -142,12 +189,24 @@ public class LeaderboardPanel extends JPanel {
         });
     }
 
-    // 🎨 Border bo góc tùy chỉnh
+    /**
+     * Lớp viền bo góc tùy chỉnh cho các thành phần giao diện.
+     * <p>
+     * Dùng cho tiêu đề, khung danh sách điểm và nút Back.
+     * </p>
+     */
     private static class RoundedBorder extends AbstractBorder {
         private final Color color;
         private final int thickness;
         private final int radius;
 
+        /**
+         * Khởi tạo một đường viền bo góc tùy chỉnh.
+         *
+         * @param color     màu viền
+         * @param thickness độ dày của đường viền
+         * @param radius    bán kính bo góc
+         */
         public RoundedBorder(Color color, int thickness, int radius) {
             this.color = color;
             this.thickness = thickness;
@@ -166,6 +225,11 @@ public class LeaderboardPanel extends JPanel {
         }
     }
 
+    /**
+     * Vẽ lại ảnh nền khi panel được hiển thị.
+     *
+     * @param g đối tượng {@link Graphics} để vẽ
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

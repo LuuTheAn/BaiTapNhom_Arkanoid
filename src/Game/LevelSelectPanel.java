@@ -1,7 +1,6 @@
 package Game;
 
 import sound.Sound;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
@@ -9,12 +8,36 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 
+/**
+ * {@code LevelSelectPanel} là giao diện chọn màn chơi (level) trong game.
+ * <p>
+ * Người chơi có thể chọn các level đã được mở khóa để bắt đầu chơi,
+ * hoặc quay lại menu chính. Panel này cũng hiển thị nền ảnh và các nút
+ * được thiết kế với viền bo tròn và hiệu ứng hover.
+ * </p>
+ *
+ * @author
+ * @version 1.0
+ */
 public class LevelSelectPanel extends JPanel {
+
+    /** Container chứa toàn bộ các panel khác (menu, game, leaderboard, v.v.) */
     private final JPanel container;
+
+    /** Mảng chứa các nút chọn level */
     private final JButton[] levelButtons;
+
+    /** Ảnh nền của màn chọn level */
     private Image backgroundImage;
+
+    /** Đối tượng âm thanh dùng để phát hiệu ứng click */
     private final Sound sound;
 
+    /**
+     * Khởi tạo giao diện chọn level.
+     *
+     * @param container {@link JPanel} cha, chứa tất cả các panel khác trong game.
+     */
     public LevelSelectPanel(JPanel container) {
         this.container = container;
         this.sound = Sound.getInstance();
@@ -22,7 +45,7 @@ public class LevelSelectPanel extends JPanel {
         setLayout(new GridBagLayout());
         setBackground(Color.BLACK);
 
-        // 🔹 Load background
+        // 🔹 Load ảnh nền
         try {
             backgroundImage = ImageIO.read(getClass().getResource("/img/menu_bg.jpg"));
         } catch (IOException e) {
@@ -41,13 +64,13 @@ public class LevelSelectPanel extends JPanel {
         title.setOpaque(true);
         title.setBackground(new Color(0, 0, 0, 120));
         title.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(Color.WHITE, 2, 35), // 🎨 viền bo tròn
+                new RoundedBorder(Color.WHITE, 2, 35),
                 BorderFactory.createEmptyBorder(10, 30, 10, 30)
         ));
         gbc.gridy = 0;
         add(title, gbc);
 
-        // 🔹 Tạo các nút level
+        // 🔹 Các nút chọn level
         int totalLevels = 5;
         levelButtons = new JButton[totalLevels];
         for (int i = 0; i < totalLevels; i++) {
@@ -63,7 +86,7 @@ public class LevelSelectPanel extends JPanel {
             });
         }
 
-        // 🔹 Nút quay lại
+        // 🔹 Nút quay lại menu chính
         gbc.gridy = totalLevels + 1;
         JButton back = createButton("BACK");
         back.addActionListener(e -> {
@@ -73,7 +96,12 @@ public class LevelSelectPanel extends JPanel {
         add(back, gbc);
     }
 
-    // 🎨 Tạo style cho nút có viền bo tròn
+    /**
+     * Tạo nút bo tròn có hiệu ứng hover.
+     *
+     * @param text nội dung hiển thị trên nút.
+     * @return {@link JButton} đã được tạo style.
+     */
     private JButton createButton(String text) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Arial", Font.BOLD, 28));
@@ -81,12 +109,12 @@ public class LevelSelectPanel extends JPanel {
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(Color.WHITE, 2, 25), // 🎨 bo tròn nút
+                new RoundedBorder(Color.WHITE, 2, 25),
                 BorderFactory.createEmptyBorder(10, 25, 10, 25)
         ));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // 💡 Hiệu ứng hover
+        // 💡 Hiệu ứng hover (sáng hơn khi di chuột)
         btn.addChangeListener(e -> {
             if (btn.getModel().isRollover()) {
                 btn.setBackground(new Color(80, 80, 80, 250));
@@ -98,7 +126,13 @@ public class LevelSelectPanel extends JPanel {
         return btn;
     }
 
-    // 🔓 Cập nhật trạng thái mở khóa level
+    /**
+     * Cập nhật trạng thái khóa/mở của các level.
+     * <p>
+     * Các level đã được mở khóa sẽ sáng lên và có thể click được,
+     * còn những level chưa mở thì hiển thị biểu tượng "🔒 LOCKED".
+     * </p>
+     */
     public void refreshUnlockStatus() {
         int unlocked = ProgressManager.getUnlockedLevel();
 
@@ -117,7 +151,11 @@ public class LevelSelectPanel extends JPanel {
         }
     }
 
-    // ▶️ Bắt đầu chơi level
+    /**
+     * Bắt đầu chơi level cụ thể.
+     *
+     * @param level số thứ tự của level (bắt đầu từ 1).
+     */
     private void startLevel(int level) {
         GamePanel gamePanel = null;
         MenuPanel menuPanel = null;
@@ -142,30 +180,45 @@ public class LevelSelectPanel extends JPanel {
         }
     }
 
-    // ⏪ Quay lại menu
+    /**
+     * Quay lại màn menu chính.
+     */
     private void showMenu() {
         CardLayout cl = (CardLayout) container.getLayout();
         cl.show(container, "MENU");
     }
 
-    // 🔊 Âm thanh click
+    /**
+     * Phát hiệu ứng âm thanh khi click nút.
+     */
     private void playClickSound() {
         sound.play(1);
     }
 
-    // 🔁 Khi hiển thị lại thì cập nhật mở khóa
+    /**
+     * Khi panel hiển thị lại (setVisible = true), tự động cập nhật trạng thái mở khóa.
+     *
+     * @param visible true nếu hiển thị panel.
+     */
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) refreshUnlockStatus();
     }
 
-    // 🎨 Border bo tròn tùy chỉnh
+    /**
+     * Border có góc bo tròn tuỳ chỉnh dùng để vẽ cho các nút hoặc khung tiêu đề.
+     */
     private static class RoundedBorder extends AbstractBorder {
         private final Color color;
         private final int thickness;
         private final int radius;
 
+        /**
+         * @param color     màu viền
+         * @param thickness độ dày viền
+         * @param radius    độ cong góc
+         */
         public RoundedBorder(Color color, int thickness, int radius) {
             this.color = color;
             this.thickness = thickness;
@@ -187,7 +240,11 @@ public class LevelSelectPanel extends JPanel {
         }
     }
 
-    // 🎨 Vẽ nền
+    /**
+     * Vẽ nền panel (ảnh nền + lớp overlay làm mờ).
+     *
+     * @param g đối tượng {@link Graphics} dùng để vẽ.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -198,7 +255,7 @@ public class LevelSelectPanel extends JPanel {
             g.fillRect(0, 0, getWidth(), getHeight());
         }
 
-        // Overlay nhẹ cho độ tương phản
+        // Overlay nhẹ giúp tăng độ tương phản
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setColor(new Color(0, 0, 0, 100));
         g2.fillRect(0, 0, getWidth(), getHeight());

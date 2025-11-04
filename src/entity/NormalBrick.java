@@ -7,12 +7,48 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * Lớp {@code NormalBrick} đại diện cho loại gạch thông thường trong game Arkanoid.
+ * <p>
+ * Gạch thường bị phá hủy sau một cú đánh duy nhất, có nhiều texture khác nhau
+ * để tạo hiệu ứng ngẫu nhiên, và phát ra âm thanh khi bị vỡ.
+ * </p>
+ *
+ * <p><b>Đặc điểm:</b></p>
+ * <ul>
+ *   <li>Chịu 1 lần va chạm (hitPoints = 1)</li>
+ *   <li>Có 5 loại texture khác nhau để chọn ngẫu nhiên</li>
+ *   <li>Phát âm thanh khi bị phá</li>
+ * </ul>
+ *
+ * @see Brick
+ * @see StrongBrick
+ * @see ExplosiveBrick
+ * @author An
+ * @version 1.0
+ */
 public class NormalBrick extends Brick {
-    private static BufferedImage[] textures; // ✅ nhiều ảnh khác nhau
-    private static boolean loaded = false;
-    private BufferedImage image;
-    private static final Sound sound = Sound.getInstance(); // ✅ chỉ load 1 lần âm thanh
 
+    /** Danh sách texture của gạch thường (được load một lần duy nhất) */
+    private static BufferedImage[] textures;
+
+    /** Biến cờ kiểm tra xem texture đã được load hay chưa */
+    private static boolean loaded = false;
+
+    /** Ảnh hiển thị cụ thể của viên gạch này */
+    private BufferedImage image;
+
+    /** Đối tượng âm thanh dùng chung trong toàn bộ game */
+    private static final Sound sound = Sound.getInstance();
+
+    /**
+     * Khởi tạo một viên {@code NormalBrick} tại vị trí và kích thước chỉ định.
+     *
+     * @param x hoành độ của viên gạch
+     * @param y tung độ của viên gạch
+     * @param width chiều rộng
+     * @param height chiều cao
+     */
     public NormalBrick(int x, int y, int width, int height) {
         super(x, y, width, height, 1);
 
@@ -25,6 +61,10 @@ public class NormalBrick extends Brick {
         }
     }
 
+    /**
+     * Nạp các texture của gạch thường từ thư mục tài nguyên.
+     * <p>Nếu việc tải ảnh thất bại, hệ thống sẽ dùng màu mặc định.</p>
+     */
     private void loadTextures() {
         try {
             textures = new BufferedImage[]{
@@ -42,12 +82,22 @@ public class NormalBrick extends Brick {
         }
     }
 
+    /**
+     * Giảm điểm máu của viên gạch khi bị đánh trúng.
+     * <p>Sau khi bị phá, gạch sẽ phát âm thanh hiệu ứng.</p>
+     */
     @Override
     public void takeHit() {
-        super.takeHit(); // ✅ giảm máu (hitPoints--)
-        sound.play(2);   // 🔊 phát âm thanh vỡ gạch (ID 2 = break.wav)
+        super.takeHit(); // giảm hitPoints
+        sound.play(2);   // phát âm thanh vỡ gạch
     }
 
+    /**
+     * Vẽ viên gạch lên màn hình.
+     * <p>Nếu ảnh chưa được tải, sẽ dùng hình chữ nhật màu cam làm mặc định.</p>
+     *
+     * @param g đối tượng {@link Graphics2D} dùng để vẽ
+     */
     @Override
     public void render(Graphics2D g) {
         if (!isDestroyed()) {
